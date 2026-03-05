@@ -1,5 +1,7 @@
 # Yu-Jin
 
+<img src="web/public/yu-jin.png" alt="Yu-Jin" width="200" align="right" />
+
 A Discord bot built around a Cyberpunk TTRPG fixer character. Yu-Jin watches the door, keeps a favor ledger, and notices when people go quiet. All settings are configurable per-guild via slash commands.
 
 ## Setup
