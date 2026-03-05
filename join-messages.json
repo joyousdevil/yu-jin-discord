@@ -1,0 +1,15 @@
+[
+  "**{user}** just walked through the door.",
+  "**{user}** arrived. I'll add it to the ledger.",
+  "**{user}** is here. Watson's getting interesting.",
+  "**{user}** came in. I'll put the kettle on.",
+  "There's **{user}**. Right on time.",
+  "**{user}** just walked in. I know three people who've been waiting.",
+  "**{user}** showed up. Took notes.",
+  "**{user}** arrived at **#{channel}**.",
+  "**{user}** just came through. Noted.",
+  "**{user}** is in **#{channel}**. Door's always open.",
+  "Eat. **{user}** is here.",
+  "**{user}**. Good. I was just thinking about you.",
+  "**{user}** came through. Watson knows."
+]
