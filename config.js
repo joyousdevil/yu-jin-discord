@@ -2,7 +2,9 @@ import { readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 
-const CONFIG_PATH = fileURLToPath(new URL('./guild-config.json', import.meta.url));
+const CONFIG_PATH = process.env.DATA_DIR
+  ? `${process.env.DATA_DIR}/guild-config.json`
+  : fileURLToPath(new URL('./guild-config.json', import.meta.url));
 
 let configCache = null;
 
