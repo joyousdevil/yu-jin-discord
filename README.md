@@ -53,6 +53,10 @@ Watch for users who have gone quiet. Requires **Manage Guild** permission.
 - `/absence unwatch @user` — Stop watching a user
 - `/absence list` — Show all watched users and their last-seen dates
 
+## Hosting
+
+The bot runs as a persistent process (Gateway WebSocket) and must be always-on. It is hosted on **Railway** — connected to this GitHub repo, with environment variables set in the Railway dashboard. Railway redeploys automatically on every push to `main`.
+
 ## How It Works
 
 Yu-Jin connects to Discord via the Gateway API (WebSocket) and listens for `VOICE_STATE_UPDATE` events. When a human user joins a voice channel, it picks a random message from `join-messages.json` and posts it to the configured notification channel.

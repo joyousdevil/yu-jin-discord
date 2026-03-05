@@ -22,6 +22,10 @@ npm run dev    # localhost:3000
 npm run build  # static export → out/
 ```
 
+## Hosting
+
+The bot is hosted on **Railway**, connected to this GitHub repo. Railway runs `npm start` and redeploys on every push to `main`. Environment variables are set in the Railway dashboard — do not commit `.env` to the repo.
+
 ## Environment Setup
 
 Copy `.env.sample` to `.env` and populate:
