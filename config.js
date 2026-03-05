@@ -33,9 +33,23 @@ export async function setNotifyChannel(guildId, channelId) {
   await writeConfig(config);
 }
 
+export async function clearNotifyChannel(guildId) {
+  const config = await readConfig();
+  if (!config[guildId]) return;
+  delete config[guildId].notifyChannelId;
+  await writeConfig(config);
+}
+
 export async function setMentionUser(guildId, userId) {
   const config = await readConfig();
   config[guildId] = { ...config[guildId], mentionUserId: userId };
+  await writeConfig(config);
+}
+
+export async function clearMentionUser(guildId) {
+  const config = await readConfig();
+  if (!config[guildId]) return;
+  delete config[guildId].mentionUserId;
   await writeConfig(config);
 }
 

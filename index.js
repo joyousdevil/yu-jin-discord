@@ -3,12 +3,12 @@ import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import {
-  getConfig, setNotifyChannel, setMentionUser, setScheduleInterval,
+  getConfig, setNotifyChannel, clearNotifyChannel, setMentionUser, clearMentionUser, setScheduleInterval,
   logFavor, getFavors, settleFavor,
   updateLastSeen, setAbsenceWatch, removeAbsenceWatch, getAbsenceWatches, updateLastAlerted,
 } from './config.js';
 import {
-  CMD_SET_NOTIFY_CHANNEL, CMD_SET_MENTION_USER, CMD_SET_SCHEDULE,
+  CMD_SET_NOTIFY_CHANNEL, CMD_SET_MENTION_USER, CMD_CLEAR_MENTION_USER, CMD_SET_SCHEDULE, CMD_STOP_SCHEDULE, CMD_DISABLE_VOICE_NOTIFIER,
   CMD_FAVOR, CMD_ABSENCE,
 } from './commands.js';
 import JOIN_MESSAGES from './join-messages.json' with { type: 'json' };
@@ -174,8 +174,15 @@ client.on('interactionCreate', async (interaction) => {
       flags: MessageFlags.Ephemeral,
     });
 
+  } else if (commandName === CMD_CLEAR_MENTION_USER) {
+    await clearMentionUser(guildId);
+    await interaction.reply({
+      content: 'Mention user removed. Notifications will no longer ping anyone.',
+      flags: MessageFlags.Ephemeral,
+    });
+
   } else if (commandName === CMD_SET_SCHEDULE) {
-    const minutes = interaction.options.getInteger('interval');
+    const minutes = interaction.options.getInteger('minutes');
     await setScheduleInterval(guildId, minutes);
 
     if (minutes === 0) {
@@ -199,6 +206,21 @@ client.on('interactionCreate', async (interaction) => {
         flags: MessageFlags.Ephemeral,
       });
     }
+
+  } else if (commandName === CMD_STOP_SCHEDULE) {
+    await setScheduleInterval(guildId, 0);
+    stopSchedule(guildId);
+    await interaction.reply({
+      content: 'Scheduled messages stopped.',
+      flags: MessageFlags.Ephemeral,
+    });
+
+  } else if (commandName === CMD_DISABLE_VOICE_NOTIFIER) {
+    await clearNotifyChannel(guildId);
+    await interaction.reply({
+      content: 'Voice join notifications disabled.',
+      flags: MessageFlags.Ephemeral,
+    });
 
   } else if (commandName === CMD_FAVOR) {
     const sub = interaction.options.getSubcommand();

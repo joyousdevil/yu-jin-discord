@@ -7,6 +7,9 @@ export const CMD_SET_MENTION_USER = 'set-mention-user';
 export const CMD_SET_SCHEDULE = 'set-schedule';
 export const CMD_FAVOR = 'favor';
 export const CMD_ABSENCE = 'absence';
+export const CMD_DISABLE_VOICE_NOTIFIER = 'disable-voice-notifier';
+export const CMD_CLEAR_MENTION_USER = 'clear-mention-user';
+export const CMD_STOP_SCHEDULE = 'stop-schedule';
 
 export const SET_NOTIFY_CHANNEL = {
   name: CMD_SET_NOTIFY_CHANNEL,
@@ -43,7 +46,7 @@ export const SET_SCHEDULE = {
   options: [
     {
       type: ApplicationCommandOptionType.Integer,
-      name: 'interval',
+      name: 'minutes',
       description: 'Minutes between messages (0 to disable).',
       required: true,
       min_value: 0,
@@ -113,6 +116,24 @@ export const FAVOR = {
   ],
 };
 
+export const STOP_SCHEDULE = {
+  name: CMD_STOP_SCHEDULE,
+  description: "Stop Yu-Jin's random scheduled messages.",
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
+};
+
+export const CLEAR_MENTION_USER = {
+  name: CMD_CLEAR_MENTION_USER,
+  description: 'Remove the user mentioned in voice join notifications.',
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
+};
+
+export const DISABLE_VOICE_NOTIFIER = {
+  name: CMD_DISABLE_VOICE_NOTIFIER,
+  description: 'Turn off voice join notifications.',
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
+};
+
 export const ABSENCE = {
   name: CMD_ABSENCE,
   description: 'Watch for users who have gone quiet.',
@@ -159,7 +180,7 @@ export const ABSENCE = {
   ],
 };
 
-const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, SET_SCHEDULE, FAVOR, ABSENCE];
+const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, CLEAR_MENTION_USER, SET_SCHEDULE, STOP_SCHEDULE, DISABLE_VOICE_NOTIFIER, FAVOR, ABSENCE];
 
 async function installCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
