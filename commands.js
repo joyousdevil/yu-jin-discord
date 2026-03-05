@@ -29,7 +29,22 @@ export const SET_MENTION_USER = {
   ],
 };
 
-const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER];
+export const SET_SCHEDULE = {
+  name: 'set-schedule',
+  description: 'Set how often Yu-Jin posts a random message to the notify channel. Use 0 to disable.',
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
+  options: [
+    {
+      type: ApplicationCommandOptionType.Integer,
+      name: 'interval',
+      description: 'Minutes between messages (0 to disable).',
+      required: true,
+      min_value: 0,
+    },
+  ],
+};
+
+const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, SET_SCHEDULE];
 
 async function installCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);

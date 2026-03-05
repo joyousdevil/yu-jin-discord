@@ -26,3 +26,9 @@ export async function setMentionUser(guildId, userId) {
   config[guildId] = { ...config[guildId], mentionUserId: userId };
   await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
+
+export async function setScheduleInterval(guildId, minutes) {
+  const config = await readConfig();
+  config[guildId] = { ...config[guildId], scheduleIntervalMinutes: minutes };
+  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+}
