@@ -15,7 +15,21 @@ export const SET_NOTIFY_CHANNEL = {
   ],
 };
 
-const ALL_COMMANDS = [SET_NOTIFY_CHANNEL];
+export const SET_MENTION_USER = {
+  name: 'set-mention-user',
+  description: 'Set a user to mention in voice join notifications.',
+  default_member_permissions: String(PermissionFlagsBits.ManageGuild),
+  options: [
+    {
+      type: ApplicationCommandOptionType.User,
+      name: 'user',
+      description: 'The user to mention when someone joins a voice channel.',
+      required: true,
+    },
+  ],
+};
+
+const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER];
 
 async function installCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);

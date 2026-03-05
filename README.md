@@ -33,12 +33,16 @@ npm start
 ### `/set-notify-channel`
 Sets the text channel where voice join notifications are posted. Requires **Manage Guild** permission.
 
+### `/set-mention-user`
+Sets a user to mention in every voice join notification. Requires **Manage Guild** permission. Optional — omit to post notifications without a mention.
+
 ## How It Works
 
 Yu-Jin connects to Discord via the Gateway API (WebSocket) and listens for `VOICE_STATE_UPDATE` events. When a human user joins a voice channel, it posts a message to the configured notification channel:
 
 ```
 **Alice** joined **#Gaming**
+**Alice** joined **#Gaming** — @Bob
 ```
 
-Guild notification channel preferences are stored in `guild-config.json` (created at runtime, gitignored).
+Guild preferences are stored in `guild-config.json` (created at runtime, gitignored).

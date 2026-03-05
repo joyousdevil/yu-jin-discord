@@ -27,7 +27,7 @@ Yu-Jin is a Node.js (ESM, `"type": "module"`) Discord bot using **discord.js v14
 
 **Two responsibilities handled by the Gateway client:**
 1. `voiceStateUpdate` event — detects voice joins and posts notifications to the configured channel
-2. `interactionCreate` event — handles the `/set-notify-channel` slash command
+2. `interactionCreate` event — handles `/set-notify-channel` and `/set-mention-user` slash commands
 
 **Detecting a join:**
 ```
@@ -37,14 +37,15 @@ Bots are filtered out via `newState.member.user.bot`.
 
 **Module responsibilities:**
 - `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers
-- `commands.js` — Defines `SET_NOTIFY_CHANNEL` command and registers it via Discord REST API (globally or guild-scoped if `GUILD_ID` is set)
-- `config.js` — `getConfig(guildId)` / `setNotifyChannel(guildId, channelId)` — reads and writes `guild-config.json`
+- `commands.js` — Defines `SET_NOTIFY_CHANNEL` and `SET_MENTION_USER` commands and registers them via Discord REST API (globally or guild-scoped if `GUILD_ID` is set)
+- `config.js` — `getConfig(guildId)` / `setNotifyChannel(guildId, channelId)` / `setMentionUser(guildId, userId)` — reads and writes `guild-config.json`
 
-**Config persistence:** `guild-config.json` at the project root maps guild ID → notification channel ID. Created at runtime, gitignored.
+**Config persistence:** `guild-config.json` at the project root maps guild ID → `{ notifyChannelId, mentionUserId? }`. Created at runtime, gitignored.
 
-**Notification format:** Plain text, no embeds, no pings:
+**Notification format:** Plain text, no embeds. Mention is appended if configured:
 ```
 **<username>** joined **#<voice-channel-name>**
+**<username>** joined **#<voice-channel-name>** — <@mentionUserId>
 ```
 
 **Required Gateway intents:** `Guilds`, `GuildVoiceStates` (neither is privileged).
