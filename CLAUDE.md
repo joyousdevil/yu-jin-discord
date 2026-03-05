@@ -8,10 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm install          # Install dependencies
 npm start            # Run the bot (node index.js)
 npm run dev          # Run with auto-reload via nodemon
-npm run register     # Register slash commands with Discord API
+npm run register     # Register slash commands with Discord API (run locally, not by Railway)
 ```
 
 No test or lint scripts are configured.
+
+**`npm run register` must be run manually from your local machine whenever slash commands are added, removed, or modified.** Railway only runs `npm start` — it never registers commands.
 
 ### Website (`web/`)
 
@@ -51,7 +53,7 @@ oldState.channelId === null && newState.channelId !== null  →  user joined
 Bots are filtered out via `newState.member.user.bot`.
 
 **Module responsibilities:**
-- `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and `messageQueues` (guildId → shuffled message array) in memory; contains `checkAbsences()` logic
+- `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and three shuffle-queue maps (`messageQueues`, `joinMessageQueues`, `absenceMessageQueues`) in memory; contains `checkAbsences()` logic
 - `commands.js` — Exports command name constants and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
 - `config.js` — All config read/write functions; reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
 
@@ -76,11 +78,11 @@ Bots are filtered out via `newState.member.user.bot`.
 }
 ```
 
-**Join messages:** `join-messages.json` is a JSON array of strings with `{user}` and `{channel}` placeholders. One is picked at random on each voice join (no shuffle queue — joins are infrequent).
+**Join messages:** `join-messages.json` is a JSON array of strings with `{user}` and `{channel}` placeholders. Drawn from a per-guild shuffle queue; refills when exhausted (no repeats until all messages have been sent).
 
-**Scheduled messages:** `messages.json` is a JSON array of strings. Messages are shuffled per-guild into a queue; the queue refills when exhausted (no repeats until all messages have been sent).
+**Scheduled messages:** `messages.json` is a JSON array of strings. Drawn from a per-guild shuffle queue; refills when exhausted.
 
-**Absence alerts:** `ABSENCE_MESSAGES` array inline in `index.js`. One picked at random per alert. Uses `<@userId>` ping format.
+**Absence alerts:** `ABSENCE_MESSAGES` array inline in `index.js`. Drawn from a per-guild shuffle queue; refills when exhausted. Uses `<@userId>` ping format.
 
 **Required Gateway intents:** `Guilds`, `GuildVoiceStates` (neither is privileged).
 
