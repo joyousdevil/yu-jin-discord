@@ -38,8 +38,17 @@ Sets the text channel where voice join notifications and scheduled messages are 
 ### `/set-mention-user`
 Sets a user to mention in every voice join notification. Requires **Manage Guild** permission.
 
+### `/clear-mention-user`
+Removes the mention user. Notifications will still post, just without a ping. Requires **Manage Guild** permission.
+
 ### `/set-schedule`
-Sets how often Yu-Jin posts a random message to the notify channel. Pass an interval in minutes, or `0` to disable. Requires **Manage Guild** permission.
+Sets how often Yu-Jin posts a random message to the notify channel. Pass `minutes:N`, or use `/stop-schedule` to disable. Requires **Manage Guild** permission.
+
+### `/stop-schedule`
+Stops scheduled random messages. Requires **Manage Guild** permission.
+
+### `/disable-voice-notifier`
+Turns off voice join notifications. Requires **Manage Guild** permission.
 
 ### `/favor`
 Track favors between server members. Available to all members.

@@ -14,8 +14,17 @@ Sets the text channel where Yu-Jin posts voice join notifications and scheduled 
 ### `/set-mention-user @user`
 Sets a user to ping on every voice join notification. Optional — omit to post without a mention.
 
-### `/set-schedule interval:N`
-Sets how often Yu-Jin posts a random message to the notify channel. `N` is in minutes. Use `0` to disable.
+### `/clear-mention-user`
+Removes the mention user. Notifications will still post, just without a ping.
+
+### `/set-schedule minutes:N`
+Sets how often Yu-Jin posts a random message to the notify channel. `N` is in minutes.
+
+### `/stop-schedule`
+Stops scheduled random messages.
+
+### `/disable-voice-notifier`
+Turns off voice join notifications entirely.
 
 ---
 
