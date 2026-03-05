@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { getConfig, setNotifyChannel, setMentionUser } from './config.js';
 
 const client = new Client({
@@ -35,14 +35,14 @@ client.on('interactionCreate', async (interaction) => {
     await setNotifyChannel(interaction.guildId, channel.id);
     await interaction.reply({
       content: `Voice join notifications will be posted in <#${channel.id}>.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   } else if (interaction.commandName === 'set-mention-user') {
     const user = interaction.options.getUser('user');
     await setMentionUser(interaction.guildId, user.id);
     await interaction.reply({
       content: `<@${user.id}> will be mentioned in voice join notifications.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 });
