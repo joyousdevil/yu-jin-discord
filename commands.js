@@ -1,8 +1,13 @@
 import 'dotenv/config';
+import { fileURLToPath } from 'url';
 import { REST, Routes, ApplicationCommandOptionType, PermissionFlagsBits } from 'discord.js';
 
+export const CMD_SET_NOTIFY_CHANNEL = 'set-notify-channel';
+export const CMD_SET_MENTION_USER = 'set-mention-user';
+export const CMD_SET_SCHEDULE = 'set-schedule';
+
 export const SET_NOTIFY_CHANNEL = {
-  name: 'set-notify-channel',
+  name: CMD_SET_NOTIFY_CHANNEL,
   description: 'Set the channel where voice join notifications are posted.',
   default_member_permissions: String(PermissionFlagsBits.ManageGuild),
   options: [
@@ -16,7 +21,7 @@ export const SET_NOTIFY_CHANNEL = {
 };
 
 export const SET_MENTION_USER = {
-  name: 'set-mention-user',
+  name: CMD_SET_MENTION_USER,
   description: 'Set a user to mention in voice join notifications.',
   default_member_permissions: String(PermissionFlagsBits.ManageGuild),
   options: [
@@ -30,7 +35,7 @@ export const SET_MENTION_USER = {
 };
 
 export const SET_SCHEDULE = {
-  name: 'set-schedule',
+  name: CMD_SET_SCHEDULE,
   description: 'Set how often Yu-Jin posts a random message to the notify channel. Use 0 to disable.',
   default_member_permissions: String(PermissionFlagsBits.ManageGuild),
   options: [
@@ -63,4 +68,7 @@ async function installCommands() {
   }
 }
 
-installCommands().catch(console.error);
+// Only register when run directly (npm run register)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  installCommands().catch(console.error);
+}

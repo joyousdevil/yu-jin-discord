@@ -1,6 +1,6 @@
 # Yu-Jin
 
-A Discord bot that posts a message in a designated text channel whenever a user joins a voice channel. The notification channel is configurable per-guild via a slash command.
+A Discord bot that posts a notification when a user joins a voice channel, and periodically sends random messages to a configured channel. All settings are configurable per-guild via slash commands.
 
 ## Setup
 
@@ -31,10 +31,13 @@ npm start
 ## Slash Commands
 
 ### `/set-notify-channel`
-Sets the text channel where voice join notifications are posted. Requires **Manage Guild** permission.
+Sets the text channel where voice join notifications and scheduled messages are posted. Requires **Manage Guild** permission.
 
 ### `/set-mention-user`
 Sets a user to mention in every voice join notification. Requires **Manage Guild** permission. Optional — omit to post notifications without a mention.
+
+### `/set-schedule`
+Sets how often Yu-Jin posts a random message to the notify channel. Pass an interval in minutes, or `0` to disable. Requires **Manage Guild** permission.
 
 ## How It Works
 
@@ -44,5 +47,7 @@ Yu-Jin connects to Discord via the Gateway API (WebSocket) and listens for `VOIC
 **Alice** joined **#Gaming**
 **Alice** joined **#Gaming** — @Bob
 ```
+
+It also supports posting periodic random messages (sourced from `messages.json`) on a configurable interval per guild.
 
 Guild preferences are stored in `guild-config.json` (created at runtime, gitignored).

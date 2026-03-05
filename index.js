@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { getConfig, setNotifyChannel, setMentionUser, setScheduleInterval } from './config.js';
+import { CMD_SET_NOTIFY_CHANNEL, CMD_SET_MENTION_USER, CMD_SET_SCHEDULE } from './commands.js';
 
 const MESSAGES_PATH = fileURLToPath(new URL('./messages.json', import.meta.url));
 
@@ -44,7 +45,11 @@ function startSchedule(guild, notifyChannelId, intervalMinutes) {
     const messages = await getMessages();
     if (!messages.length) return;
     const msg = getNextMessage(guild.id, messages);
-    await channel.send(msg);
+    try {
+      await channel.send(msg);
+    } catch (err) {
+      console.error(`Failed to send scheduled message to guild ${guild.id}:`, err);
+    }
   }, ms);
   scheduleTimers.set(guild.id, timer);
 }
@@ -75,27 +80,31 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const username = newState.member.user.username;
   const voiceChannelName = newState.channel.name;
   const mention = guildConfig.mentionUserId ? ` — <@${guildConfig.mentionUserId}>` : '';
-  await notifyChannel.send(`**${username}** joined **#${voiceChannelName}**${mention}`);
+  try {
+    await notifyChannel.send(`**${username}** joined **#${voiceChannelName}**${mention}`);
+  } catch (err) {
+    console.error(`Failed to send voice notification to guild ${newState.guild.id}:`, err);
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  if (interaction.commandName === 'set-notify-channel') {
+  if (interaction.commandName === CMD_SET_NOTIFY_CHANNEL) {
     const channel = interaction.options.getChannel('channel');
     await setNotifyChannel(interaction.guildId, channel.id);
     await interaction.reply({
       content: `Voice join notifications will be posted in <#${channel.id}>.`,
       flags: MessageFlags.Ephemeral,
     });
-  } else if (interaction.commandName === 'set-mention-user') {
+  } else if (interaction.commandName === CMD_SET_MENTION_USER) {
     const user = interaction.options.getUser('user');
     await setMentionUser(interaction.guildId, user.id);
     await interaction.reply({
       content: `<@${user.id}> will be mentioned in voice join notifications.`,
       flags: MessageFlags.Ephemeral,
     });
-  } else if (interaction.commandName === 'set-schedule') {
+  } else if (interaction.commandName === CMD_SET_SCHEDULE) {
     const minutes = interaction.options.getInteger('interval');
     await setScheduleInterval(interaction.guildId, minutes);
 

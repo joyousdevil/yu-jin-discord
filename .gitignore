@@ -1,6 +1,6 @@
 .env
 guild-config.json
 node_modules/
-package-lock.json
 .claude/
 reference/
+yu-jin-profile.md

@@ -1,13 +1,24 @@
 import { readFile, writeFile } from 'fs/promises';
-import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const CONFIG_PATH = fileURLToPath(new URL('./guild-config.json', import.meta.url));
 
+let configCache = null;
+
 async function readConfig() {
-  if (!existsSync(CONFIG_PATH)) return {};
-  const raw = await readFile(CONFIG_PATH, 'utf-8');
-  return JSON.parse(raw);
+  if (configCache) return configCache;
+  try {
+    const raw = await readFile(CONFIG_PATH, 'utf-8');
+    configCache = JSON.parse(raw);
+  } catch {
+    configCache = {};
+  }
+  return configCache;
+}
+
+async function writeConfig(config) {
+  configCache = config;
+  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
 export async function getConfig(guildId) {
@@ -18,17 +29,17 @@ export async function getConfig(guildId) {
 export async function setNotifyChannel(guildId, channelId) {
   const config = await readConfig();
   config[guildId] = { ...config[guildId], notifyChannelId: channelId };
-  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+  await writeConfig(config);
 }
 
 export async function setMentionUser(guildId, userId) {
   const config = await readConfig();
   config[guildId] = { ...config[guildId], mentionUserId: userId };
-  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+  await writeConfig(config);
 }
 
 export async function setScheduleInterval(guildId, minutes) {
   const config = await readConfig();
   config[guildId] = { ...config[guildId], scheduleIntervalMinutes: minutes };
-  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+  await writeConfig(config);
 }
