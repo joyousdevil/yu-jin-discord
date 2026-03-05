@@ -36,15 +36,17 @@ const client = new Client({
 
 // guildId -> intervalId
 const scheduleTimers = new Map();
-// guildId -> shuffled message queue
+// Per-type shuffle queues: guildId -> remaining messages
 const messageQueues = new Map();
+const joinMessageQueues = new Map();
+const absenceMessageQueues = new Map();
 
-function getNextMessage(guildId, messages) {
-  if (!messageQueues.has(guildId) || messageQueues.get(guildId).length === 0) {
+function getNextMessage(map, guildId, messages) {
+  if (!map.has(guildId) || map.get(guildId).length === 0) {
     const shuffled = [...messages].sort(() => Math.random() - 0.5);
-    messageQueues.set(guildId, shuffled);
+    map.set(guildId, shuffled);
   }
-  return messageQueues.get(guildId).pop();
+  return map.get(guildId).pop();
 }
 
 async function getMessages() {
@@ -67,7 +69,7 @@ function startSchedule(guild, notifyChannelId, intervalMinutes) {
     if (!channel) return;
     const messages = await getMessages();
     if (!messages.length) return;
-    const msg = getNextMessage(guild.id, messages);
+    const msg = getNextMessage(messageQueues, guild.id, messages);
     try {
       await channel.send(msg);
     } catch (err) {
@@ -95,7 +97,7 @@ async function checkAbsences() {
       if (now - seen < thresholdMs) continue;
       if (watch.lastAlerted && now - watch.lastAlerted < thresholdMs) continue;
 
-      const template = ABSENCE_MESSAGES[Math.floor(Math.random() * ABSENCE_MESSAGES.length)];
+      const template = getNextMessage(absenceMessageQueues, guild.id, ABSENCE_MESSAGES);
       const msg = template.replace('{user}', userId);
       try {
         await notifyChannel.send(msg);
@@ -141,7 +143,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const voiceChannelName = newState.channel.name;
   const mention = guildConfig.mentionUserId ? ` — <@${guildConfig.mentionUserId}>` : '';
 
-  const template = JOIN_MESSAGES[Math.floor(Math.random() * JOIN_MESSAGES.length)];
+  const template = getNextMessage(joinMessageQueues, guildId, JOIN_MESSAGES);
   const msg = template.replace('{user}', username).replace('{channel}', voiceChannelName);
 
   try {
