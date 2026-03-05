@@ -12,6 +12,16 @@ const client = new Client({
 
 // guildId -> intervalId
 const scheduleTimers = new Map();
+// guildId -> shuffled message queue
+const messageQueues = new Map();
+
+function getNextMessage(guildId, messages) {
+  if (!messageQueues.has(guildId) || messageQueues.get(guildId).length === 0) {
+    const shuffled = [...messages].sort(() => Math.random() - 0.5);
+    messageQueues.set(guildId, shuffled);
+  }
+  return messageQueues.get(guildId).pop();
+}
 
 async function getMessages() {
   const raw = await readFile(MESSAGES_PATH, 'utf-8');
@@ -33,7 +43,7 @@ function startSchedule(guild, notifyChannelId, intervalMinutes) {
     if (!channel) return;
     const messages = await getMessages();
     if (!messages.length) return;
-    const msg = messages[Math.floor(Math.random() * messages.length)];
+    const msg = getNextMessage(guild.id, messages);
     await channel.send(msg);
   }, ms);
   scheduleTimers.set(guild.id, timer);
