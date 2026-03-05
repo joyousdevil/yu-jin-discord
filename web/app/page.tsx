@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { Radio, ScrollText, Eye, type LucideIcon } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -34,16 +35,19 @@ export default function Home() {
       {/* Features */}
       <div className="space-y-10 mb-12 sm:mb-16">
         <Feature
+          icon={Radio}
           title="Voice Notifications"
           description="When a member joins a voice channel, Yu-Jin posts a message in your notify channel. She draws from a repertoire at random — no two joins sound the same."
           delay="250ms"
         />
         <Feature
+          icon={ScrollText}
           title="Favor Ledger"
           description="Any server member can log, review, and settle favors. Track who owes whom across your server. The ledger is per-server and persists across bot restarts."
           delay="350ms"
         />
         <Feature
+          icon={Eye}
           title="Absence Detection"
           description="Yu-Jin checks daily whether any watched users have been absent from voice longer than their configured threshold. She'll ping them when they've been quiet too long."
           delay="450ms"
@@ -62,13 +66,16 @@ export default function Home() {
   );
 }
 
-function Feature({ title, description, delay }: { title: string; description: string; delay: string }) {
+function Feature({ icon: Icon, title, description, delay }: { icon: LucideIcon; title: string; description: string; delay: string }) {
   return (
     <div
       className="border-l-2 border-accent pl-5 animate-slide-up"
       style={{ animationDelay: delay }}
     >
-      <h2 className="text-lg font-semibold text-heading mb-1">{title}</h2>
+      <div className="flex items-center gap-2 mb-1">
+        <Icon size={16} className="text-accent shrink-0" strokeWidth={1.5} />
+        <h2 className="text-lg font-semibold text-heading">{title}</h2>
+      </div>
       <p className="text-muted leading-relaxed">{description}</p>
     </div>
   );
