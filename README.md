@@ -69,6 +69,8 @@ Watch for users who have gone quiet. Requires **Manage Guild** permission.
 
 The bot runs as a persistent process (Gateway WebSocket) and must be always-on. It is hosted on **Railway** — connected to this GitHub repo, with environment variables set in the Railway dashboard. Railway redeploys automatically on every push to `main`.
 
+**Watch Paths:** Configure the Railway service to watch only bot files (e.g. `index.js`, `config.js`, `commands.js`, `package.json`, `*.json`) so pushes that only affect `web/` don't trigger an unnecessary redeploy.
+
 ## How It Works
 
 Yu-Jin connects to Discord via the Gateway API (WebSocket) and listens for `VOICE_STATE_UPDATE` events. When a human user joins a voice channel, it picks a random message from `join-messages.json` and posts it to the configured notification channel.

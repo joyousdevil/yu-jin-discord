@@ -28,6 +28,8 @@ npm run build  # static export → out/
 
 The bot is hosted on **Railway**, connected to this GitHub repo. Railway runs `npm start` and redeploys on every push to `main`. Environment variables are set in the Railway dashboard — do not commit `.env` to the repo.
 
+**Watch Paths** are configured on the Railway service to only watch bot files, so pushes that only touch `web/` do not trigger a redeploy.
+
 ## Environment Setup
 
 Copy `.env.sample` to `.env` and populate:
