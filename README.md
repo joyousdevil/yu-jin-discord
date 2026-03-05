@@ -63,3 +63,16 @@ It also supports:
 - **Absence detection** — a daily check that pings watched users who haven't joined voice within their configured threshold
 
 Guild preferences are stored in `guild-config.json` (created at runtime, gitignored).
+
+## Website (`web/`)
+
+A static Next.js site (Tailwind CSS + MDX) with a home page, user guide, Terms of Service, and Privacy Policy. Deployed to Vercel via `vercel.json` at the repo root.
+
+```bash
+cd web
+npm install
+npm run dev    # localhost:3000
+npm run build  # generates out/
+```
+
+Content pages live in `web/content/`. `web/content/guide.mdx` mirrors `docs/USERGUIDE.md` — keep both in sync when updating.

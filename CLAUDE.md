@@ -13,6 +13,15 @@ npm run register     # Register slash commands with Discord API
 
 No test or lint scripts are configured.
 
+### Website (`web/`)
+
+```bash
+cd web
+npm install
+npm run dev    # localhost:3000
+npm run build  # static export → out/
+```
+
 ## Environment Setup
 
 Copy `.env.sample` to `.env` and populate:
@@ -72,3 +81,15 @@ Bots are filtered out via `newState.member.user.bot`.
 **Required Gateway intents:** `Guilds`, `GuildVoiceStates` (neither is privileged).
 
 **Node version note:** Uses `import ... with { type: 'json' }` syntax (Node v22+). The `assert` keyword is not used.
+
+## Website Architecture (`web/`)
+
+Next.js 15 App Router, Tailwind CSS, MDX. Deployed to Vercel via `vercel.json` (`rootDirectory: "web"`).
+
+**Stack decisions:**
+- `output: 'export'` — fully static site, no SSR. Remove when SSR features are needed.
+- MDX via `@next/mdx` + `remarkGfm`. Do **not** add `@mdx-js/react` — it causes a `createContext` crash with React 19.
+- Content in `web/content/*.mdx`; page components in `web/app/` import and wrap with `<MdxLayout>`.
+- `web/content/guide.mdx` mirrors `docs/USERGUIDE.md`. Update both files when guide content changes.
+
+**Invite link:** `href="#"` placeholder in `web/app/page.tsx`. Replace with the real Discord OAuth URL from the Developer Portal when ready.
