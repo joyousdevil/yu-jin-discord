@@ -84,7 +84,7 @@ Bots are filtered out via `newState.member.user.bot`.
 
 ## Website Architecture (`web/`)
 
-Next.js 15 App Router, Tailwind CSS, MDX. Deployed to Vercel via `vercel.json` (`rootDirectory: "web"`).
+Next.js 15 App Router, Tailwind CSS, MDX. Deployed to Vercel with Root Directory set to `web` in the Vercel project settings.
 
 **Stack decisions:**
 - `output: 'export'` — fully static site, no SSR. Remove when SSR features are needed.

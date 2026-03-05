@@ -66,7 +66,7 @@ Guild preferences are stored in `guild-config.json` (created at runtime, gitigno
 
 ## Website (`web/`)
 
-A static Next.js site (Tailwind CSS + MDX) with a home page, user guide, Terms of Service, and Privacy Policy. Deployed to Vercel via `vercel.json` at the repo root.
+A static Next.js site (Tailwind CSS + MDX) with a home page, user guide, Terms of Service, and Privacy Policy. Deployed to Vercel with Root Directory set to `web` in the Vercel project settings.
 
 ```bash
 cd web
