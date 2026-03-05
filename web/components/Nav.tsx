@@ -3,7 +3,7 @@ import ThemeToggle from './ThemeToggle';
 
 export default function Nav() {
   return (
-    <nav className="border-b border-[var(--color-border)] px-6 py-4">
+    <nav className="border-b border-[var(--color-border)] px-6 py-4 animate-fade-in">
       <div className="max-w-3xl mx-auto flex items-center justify-between">
         <Link href="/" className="text-heading font-bold tracking-tight hover:text-accent transition-colors">
           Yu-Jin
