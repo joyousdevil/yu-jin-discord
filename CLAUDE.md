@@ -35,6 +35,7 @@ Copy `.env.sample` to `.env` and populate:
 - `APP_ID` — Discord application ID
 - `PUBLIC_KEY` — App public key
 - `GUILD_ID` — *(Optional)* Guild ID for instant command registration during development
+- `DATA_DIR` — *(Optional)* Directory for `guild-config.json`. Set to `/data` on Railway (with a Volume mounted there) to persist config across redeploys. Falls back to project root if unset.
 
 ## Architecture
 
@@ -57,7 +58,7 @@ Bots are filtered out via `newState.member.user.bot`.
 - `commands.js` — Exports command name constants and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
 - `config.js` — All config read/write functions; reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
 
-**Config persistence:** `guild-config.json` at the project root maps guild ID → guild config object. Created at runtime, gitignored.
+**Config persistence:** `guild-config.json` maps guild ID → guild config object. Created at runtime, gitignored. Path is `$DATA_DIR/guild-config.json` when `DATA_DIR` is set, otherwise project root. On Railway, `DATA_DIR=/data` with a Volume mounted at `/data` is required to survive redeploys.
 
 ```json
 {

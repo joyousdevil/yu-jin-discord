@@ -21,6 +21,7 @@ npm start
 | `APP_ID` | Application ID |
 | `PUBLIC_KEY` | App public key |
 | `GUILD_ID` | *(Optional)* Register commands to a specific guild for instant updates during development |
+| `DATA_DIR` | *(Optional)* Directory for `guild-config.json`. Set to `/data` on Railway to persist config to a Volume across redeploys. |
 
 ## Commands
 
