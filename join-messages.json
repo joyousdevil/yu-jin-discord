@@ -11,5 +11,19 @@
   "**{user}** is in **#{channel}**. Door's always open.",
   "Eat. **{user}** is here.",
   "**{user}**. Good. I was just thinking about you.",
-  "**{user}** came through. Watson knows."
+  "**{user}** came through. Watson knows.",
+  "**{user}** is in **#{channel}**. Welcome back.",
+  "**{user}** just joined. I had a feeling.",
+  "Good. **{user}** is here. We can start.",
+  "**{user}** showed up. This I can work with.",
+  "**{user}** just walked in. Mrs. Bae would approve.",
+  "There's **{user}**. The room just got more interesting.",
+  "**{user}** arrived. I'm not surprised. You always show up.",
+  "**{user}**. Mm. Good. Sit down.",
+  "**{user}** is here. Didn't even have to ask. Appreciated.",
+  "**{user}** came through **#{channel}**. I'll make room.",
+  "**{user}** just joined **#{channel}**. The ledger updates itself.",
+  "**{user}**. I was just about to reach out. Saved me the trouble.",
+  "**{user}** is in. That's everyone I needed.",
+  "**{user}** walked in like they knew we were waiting. We were."
 ]

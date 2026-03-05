@@ -20,6 +20,14 @@ const ABSENCE_MESSAGES = [
   "Haven't seen <@{user}> around lately. Noted.",
   "<@{user}>. It's been a few days. I'm not asking. I'm noting.",
   "The ledger shows <@{user}> hasn't checked in. Just an observation.",
+  "<@{user}>. The ledger shows a gap. I'm not lecturing. Just noting.",
+  "It's been a while since we've heard from <@{user}>. Door's still open.",
+  "<@{user}> has been quiet. I have soup if that helps.",
+  "Friendly check-in for <@{user}>. No pressure. Just making sure the lines are still good.",
+  "<@{user}>. I don't chase. But I do keep records. Come back when you can.",
+  "The network misses <@{user}>. I said what I said.",
+  "<@{user}> hasn't been around. Noted it three times now. Starting to feel like a pattern.",
+  "Checking in on <@{user}>. Not because I'm worried. I'm definitely a little worried.",
 ];
 
 const client = new Client({
