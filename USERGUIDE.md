@@ -1,0 +1,107 @@
+# Yu-Jin — User Guide
+
+Yu-Jin is a fixer. She watches the door, keeps the ledger, and notices when people go quiet.
+
+---
+
+## For Server Admins
+
+Before any features work, a notify channel must be configured.
+
+### `/set-notify-channel #channel`
+Sets the text channel where Yu-Jin posts voice join notifications and scheduled messages.
+
+### `/set-mention-user @user`
+Sets a user to ping on every voice join notification. Optional — omit to post without a mention.
+
+### `/set-schedule interval:N`
+Sets how often Yu-Jin posts a random message to the notify channel. `N` is in minutes. Use `0` to disable.
+
+---
+
+## Voice Join Notifications
+
+When a member joins a voice channel, Yu-Jin posts a message in the notify channel. The message is drawn at random from her repertoire — no two joins sound the same.
+
+---
+
+## Favor Ledger `/favor`
+
+Any server member can log, review, and settle favors. The ledger is per-server.
+
+### Log a favor
+```
+/favor log user:@Alice reason:helped me move direction:i-owe
+/favor log user:@Bob reason:covered my shift direction:they-owe
+```
+
+`direction` controls who owes whom:
+- `I owe them` — you are the debtor
+- `They owe me` — they are the debtor
+
+Yu-Jin replies: *Logged. I don't forget.*
+
+### List favors
+```
+/favor list
+/favor list user:@Alice
+```
+
+Without a user, shows all unsettled favors involving you. With a user, filters to favors between you and them.
+
+Output format:
+```
+→ You owe @Alice: helped me move (3/5/2026)
+← @Bob owes you: covered my shift (3/1/2026)
+```
+
+`→` means you owe. `←` means they owe you. Only visible to you (ephemeral).
+
+### Settle a favor
+```
+/favor settle user:@Alice
+```
+
+Marks the oldest unsettled favor between you and that user as settled. If there's nothing to settle, Yu-Jin will say so.
+
+---
+
+## Absence Detection `/absence`
+
+Requires **Manage Guild** permission.
+
+Yu-Jin checks once a day (and on startup) whether any watched users have been absent from voice longer than their configured threshold. If so, she posts an alert in the notify channel and pings them.
+
+### Watch a user
+```
+/absence watch user:@Alice days:7
+```
+
+Alerts if Alice hasn't joined any voice channel in 7 days. Yu-Jin starts tracking from the next time Alice joins — users with no recorded join history are skipped.
+
+### Stop watching a user
+```
+/absence unwatch user:@Alice
+```
+
+### See the watch list
+```
+/absence list
+```
+
+Shows all watched users, their alert thresholds, and when they were last seen in voice.
+
+```
+@Alice — alert after 7 days, last seen 3/1/2026
+@Bob — alert after 3 days, last seen never
+```
+
+**Note:** "last seen never" means Yu-Jin hasn't observed them join voice since the bot was set up. The absence check skips these users until a join is recorded.
+
+---
+
+## Notes
+
+- All command replies are ephemeral (only visible to you).
+- Favor data and absence watches are stored per-server and persist across bot restarts.
+- Yu-Jin will not alert for the same absence more than once per threshold period.
