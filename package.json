@@ -1,0 +1,23 @@
+{
+  "name": "voice-notifier",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Discord bot that notifies when users join voice channels",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "register": "node commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
