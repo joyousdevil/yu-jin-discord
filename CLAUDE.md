@@ -26,9 +26,10 @@ Copy `.env.sample` to `.env` and populate:
 Yu-Jin is a Node.js (ESM, `"type": "module"`) Discord bot using **discord.js v14** and the **Gateway API** (persistent WebSocket). There is no Express server — all interaction handling goes through the Gateway.
 
 **Responsibilities handled by the Gateway client:**
-1. `voiceStateUpdate` event — detects voice joins and posts notifications to the configured channel
-2. `interactionCreate` event — handles `/set-notify-channel`, `/set-mention-user`, and `/set-schedule` slash commands
+1. `voiceStateUpdate` event — detects voice joins, records `lastSeen`, and posts a randomized notification to the configured channel
+2. `interactionCreate` event — handles all slash commands
 3. Scheduled interval timers — per-guild timers that post random messages from `messages.json` to the notify channel
+4. Daily absence check — runs on startup and every 24h; alerts for watched users who haven't joined voice within their threshold
 
 **Detecting a join:**
 ```
@@ -37,18 +38,37 @@ oldState.channelId === null && newState.channelId !== null  →  user joined
 Bots are filtered out via `newState.member.user.bot`.
 
 **Module responsibilities:**
-- `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and `messageQueues` (guildId → shuffled message array) in memory
-- `commands.js` — Exports command name constants (`CMD_SET_NOTIFY_CHANNEL`, etc.) and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
-- `config.js` — `getConfig` / `setNotifyChannel` / `setMentionUser` / `setScheduleInterval` — reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
+- `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and `messageQueues` (guildId → shuffled message array) in memory; contains `checkAbsences()` logic
+- `commands.js` — Exports command name constants and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
+- `config.js` — All config read/write functions; reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
 
-**Config persistence:** `guild-config.json` at the project root maps guild ID → `{ notifyChannelId, mentionUserId?, scheduleIntervalMinutes? }`. Created at runtime, gitignored.
+**Config persistence:** `guild-config.json` at the project root maps guild ID → guild config object. Created at runtime, gitignored.
 
-**Scheduled messages:** `messages.json` at the project root is a JSON array of strings. Messages are shuffled per-guild into a queue; the queue refills when exhausted (no repeats until all messages have been sent).
-
-**Notification format:** Plain text, no embeds. Mention is appended if configured:
+```json
+{
+  "guildId": {
+    "notifyChannelId": "...",
+    "mentionUserId": "...",
+    "scheduleIntervalMinutes": 60,
+    "favors": [
+      { "id": "uuid", "fromUserId": "...", "toUserId": "...", "reason": "...", "timestamp": 0, "settled": false }
+    ],
+    "absenceWatches": {
+      "userId": { "thresholdDays": 7, "lastAlerted": null }
+    },
+    "lastSeen": {
+      "userId": 1234567890
+    }
+  }
+}
 ```
-**<username>** joined **#<voice-channel-name>**
-**<username>** joined **#<voice-channel-name>** — <@mentionUserId>
-```
+
+**Join messages:** `join-messages.json` is a JSON array of strings with `{user}` and `{channel}` placeholders. One is picked at random on each voice join (no shuffle queue — joins are infrequent).
+
+**Scheduled messages:** `messages.json` is a JSON array of strings. Messages are shuffled per-guild into a queue; the queue refills when exhausted (no repeats until all messages have been sent).
+
+**Absence alerts:** `ABSENCE_MESSAGES` array inline in `index.js`. One picked at random per alert. Uses `<@userId>` ping format.
 
 **Required Gateway intents:** `Guilds`, `GuildVoiceStates` (neither is privileged).
+
+**Node version note:** Uses `import ... with { type: 'json' }` syntax (Node v22+). The `assert` keyword is not used.
