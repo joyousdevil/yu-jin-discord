@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
-import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
+import { Client, GatewayIntentBits, MessageFlags, ActivityType } from 'discord.js';
 import {
   getConfig, setNotifyChannel, clearNotifyChannel, setMentionUser, clearMentionUser, setScheduleInterval,
   logFavor, getFavors, settleFavor,
@@ -111,6 +111,7 @@ async function checkAbsences() {
 
 client.once('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
+  client.user.setActivity('Marathon', { type: ActivityType.Playing });
   for (const guild of client.guilds.cache.values()) {
     const config = await getConfig(guild.id);
     if (config?.notifyChannelId && config?.scheduleIntervalMinutes) {
