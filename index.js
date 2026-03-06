@@ -111,7 +111,7 @@ async function checkAbsences() {
 
 client.once('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  client.user.setActivity('Marathon', { type: ActivityType.Playing });
+  client.user.setActivity('Marathon', { type: ActivityType.Playing, start: Date.now() });
   for (const guild of client.guilds.cache.values()) {
     const config = await getConfig(guild.id);
     if (config?.notifyChannelId && config?.scheduleIntervalMinutes) {
