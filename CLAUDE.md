@@ -9,9 +9,8 @@ npm install          # Install dependencies
 npm start            # Run the bot (node index.js)
 npm run dev          # Run with auto-reload via nodemon
 npm run register     # Register slash commands with Discord API (run locally, not by Railway)
+npm test             # Run unit tests (node:test, no extra dependencies)
 ```
-
-No test or lint scripts are configured.
 
 **`npm run register` must be run manually from your local machine whenever slash commands are added, removed, or modified.** Railway only runs `npm start` — it never registers commands.
 
@@ -59,6 +58,7 @@ Bots are filtered out via `newState.member.user.bot`.
 - `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and three shuffle-queue maps (`messageQueues`, `joinMessageQueues`, `absenceMessageQueues`) in memory; contains `checkAbsences()` logic
 - `commands.js` — Exports command name constants and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
 - `config.js` — All config read/write functions; reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
+- `utils.js` — Pure utility functions: `getNextMessage(map, guildId, messages)` manages per-guild shuffle queues
 
 **Config persistence:** `guild-config.json` maps guild ID → guild config object. Created at runtime, gitignored. Path is `$DATA_DIR/guild-config.json` when `DATA_DIR` is set, otherwise project root. On Railway, `DATA_DIR=/data` with a Volume mounted at `/data` is required to survive redeploys.
 

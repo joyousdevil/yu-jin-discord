@@ -30,6 +30,7 @@ npm start
 | `npm start` | Run the bot |
 | `npm run dev` | Run with auto-reload via nodemon |
 | `npm run register` | Register slash commands with Discord |
+| `npm test` | Run unit tests |
 
 ## Slash Commands
 

@@ -11,7 +11,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "register": "node commands.js"
+    "register": "node commands.js",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "discord.js": "^14.0.0",

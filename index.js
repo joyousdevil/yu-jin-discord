@@ -12,6 +12,7 @@ import {
   CMD_FAVOR, CMD_ABSENCE,
 } from './commands.js';
 import JOIN_MESSAGES from './join-messages.json' with { type: 'json' };
+import { getNextMessage } from './utils.js';
 
 const MESSAGES_PATH = fileURLToPath(new URL('./messages.json', import.meta.url));
 
@@ -41,13 +42,6 @@ const messageQueues = new Map();
 const joinMessageQueues = new Map();
 const absenceMessageQueues = new Map();
 
-function getNextMessage(map, guildId, messages) {
-  if (!map.has(guildId) || map.get(guildId).length === 0) {
-    const shuffled = [...messages].sort(() => Math.random() - 0.5);
-    map.set(guildId, shuffled);
-  }
-  return map.get(guildId).pop();
-}
 
 async function getMessages() {
   const raw = await readFile(MESSAGES_PATH, 'utf-8');
