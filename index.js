@@ -1,20 +1,44 @@
-import 'dotenv/config';
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { Client, GatewayIntentBits, MessageFlags, ActivityType } from 'discord.js';
+import "dotenv/config";
+import { readFile } from "fs/promises";
+import { fileURLToPath } from "url";
 import {
-  getConfig, setNotifyChannel, clearNotifyChannel, setMentionUser, clearMentionUser, setScheduleInterval,
-  logFavor, getFavors, settleFavor,
-  updateLastSeen, setAbsenceWatch, removeAbsenceWatch, getAbsenceWatches, updateLastAlerted,
-} from './config.js';
+  Client,
+  GatewayIntentBits,
+  MessageFlags,
+  ActivityType,
+} from "discord.js";
 import {
-  CMD_SET_NOTIFY_CHANNEL, CMD_SET_MENTION_USER, CMD_CLEAR_MENTION_USER, CMD_SET_SCHEDULE, CMD_STOP_SCHEDULE, CMD_DISABLE_VOICE_NOTIFIER,
-  CMD_FAVOR, CMD_ABSENCE,
-} from './commands.js';
-import JOIN_MESSAGES from './join-messages.json' with { type: 'json' };
-import { getNextMessage } from './utils.js';
+  getConfig,
+  setNotifyChannel,
+  clearNotifyChannel,
+  setMentionUser,
+  clearMentionUser,
+  setScheduleInterval,
+  logFavor,
+  getFavors,
+  settleFavor,
+  updateLastSeen,
+  setAbsenceWatch,
+  removeAbsenceWatch,
+  getAbsenceWatches,
+  updateLastAlerted,
+} from "./config.js";
+import {
+  CMD_SET_NOTIFY_CHANNEL,
+  CMD_SET_MENTION_USER,
+  CMD_CLEAR_MENTION_USER,
+  CMD_SET_SCHEDULE,
+  CMD_STOP_SCHEDULE,
+  CMD_DISABLE_VOICE_NOTIFIER,
+  CMD_FAVOR,
+  CMD_ABSENCE,
+} from "./commands.js";
+import JOIN_MESSAGES from "./join-messages.json" with { type: "json" };
+import { getNextMessage } from "./utils.js";
 
-const MESSAGES_PATH = fileURLToPath(new URL('./messages.json', import.meta.url));
+const MESSAGES_PATH = fileURLToPath(
+  new URL("./messages.json", import.meta.url),
+);
 
 const ABSENCE_MESSAGES = [
   "<@{user}> hasn't come through in a while. Everything okay?",
@@ -42,9 +66,8 @@ const messageQueues = new Map();
 const joinMessageQueues = new Map();
 const absenceMessageQueues = new Map();
 
-
 async function getMessages() {
-  const raw = await readFile(MESSAGES_PATH, 'utf-8');
+  const raw = await readFile(MESSAGES_PATH, "utf-8");
   return JSON.parse(raw);
 }
 
@@ -67,7 +90,10 @@ function startSchedule(guild, notifyChannelId, intervalMinutes) {
     try {
       await channel.send(msg);
     } catch (err) {
-      console.error(`Failed to send scheduled message to guild ${guild.id}:`, err);
+      console.error(
+        `Failed to send scheduled message to guild ${guild.id}:`,
+        err,
+      );
     }
   }, ms);
   scheduleTimers.set(guild.id, timer);
@@ -91,33 +117,49 @@ async function checkAbsences() {
       if (now - seen < thresholdMs) continue;
       if (watch.lastAlerted && now - watch.lastAlerted < thresholdMs) continue;
 
-      const template = getNextMessage(absenceMessageQueues, guild.id, ABSENCE_MESSAGES);
-      const msg = template.replace('{user}', userId);
+      const template = getNextMessage(
+        absenceMessageQueues,
+        guild.id,
+        ABSENCE_MESSAGES,
+      );
+      const msg = template.replace("{user}", userId);
       try {
         await notifyChannel.send(msg);
         await updateLastAlerted(guild.id, userId);
       } catch (err) {
-        console.error(`Failed to send absence alert to guild ${guild.id}:`, err);
+        console.error(
+          `Failed to send absence alert to guild ${guild.id}:`,
+          err,
+        );
       }
     }
   }
 }
 
-client.once('clientReady', async () => {
+client.once("clientReady", async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  client.user.setActivity('Marathon', { type: ActivityType.Playing, start: Date.now() });
+  client.user.setActivity("Project Zomboid", {
+    type: ActivityType.Playing,
+    start: Date.now(),
+  });
   for (const guild of client.guilds.cache.values()) {
     const config = await getConfig(guild.id);
     if (config?.notifyChannelId && config?.scheduleIntervalMinutes) {
-      startSchedule(guild, config.notifyChannelId, config.scheduleIntervalMinutes);
-      console.log(`Scheduled messages every ${config.scheduleIntervalMinutes}m for guild ${guild.id}`);
+      startSchedule(
+        guild,
+        config.notifyChannelId,
+        config.scheduleIntervalMinutes,
+      );
+      console.log(
+        `Scheduled messages every ${config.scheduleIntervalMinutes}m for guild ${guild.id}`,
+      );
     }
   }
   checkAbsences();
   setInterval(checkAbsences, 24 * 60 * 60 * 1000);
 });
 
-client.on('voiceStateUpdate', async (oldState, newState) => {
+client.on("voiceStateUpdate", async (oldState, newState) => {
   // Only handle joins (was not in a channel, now is)
   if (oldState.channelId !== null || newState.channelId === null) return;
   // Skip bots
@@ -131,66 +173,73 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const guildConfig = await getConfig(guildId);
   if (!guildConfig?.notifyChannelId) return;
 
-  const notifyChannel = newState.guild.channels.cache.get(guildConfig.notifyChannelId);
+  const notifyChannel = newState.guild.channels.cache.get(
+    guildConfig.notifyChannelId,
+  );
   if (!notifyChannel) return;
 
   const username = newState.member.user.username;
   const voiceChannelName = newState.channel.name;
-  const mention = guildConfig.mentionUserId ? ` — <@${guildConfig.mentionUserId}>` : '';
+  const mention = guildConfig.mentionUserId
+    ? ` — <@${guildConfig.mentionUserId}>`
+    : "";
 
   const template = getNextMessage(joinMessageQueues, guildId, JOIN_MESSAGES);
-  const msg = template.replace('{user}', username).replace('{channel}', voiceChannelName);
+  const msg = template
+    .replace("{user}", username)
+    .replace("{channel}", voiceChannelName);
 
   try {
     await notifyChannel.send(msg + mention);
   } catch (err) {
-    console.error(`Failed to send voice notification to guild ${guildId}:`, err);
+    console.error(
+      `Failed to send voice notification to guild ${guildId}:`,
+      err,
+    );
   }
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, guildId } = interaction;
 
   if (commandName === CMD_SET_NOTIFY_CHANNEL) {
-    const channel = interaction.options.getChannel('channel');
+    const channel = interaction.options.getChannel("channel");
     await setNotifyChannel(guildId, channel.id);
     await interaction.reply({
       content: `Voice join notifications will be posted in <#${channel.id}>.`,
       flags: MessageFlags.Ephemeral,
     });
-
   } else if (commandName === CMD_SET_MENTION_USER) {
-    const user = interaction.options.getUser('user');
+    const user = interaction.options.getUser("user");
     await setMentionUser(guildId, user.id);
     await interaction.reply({
       content: `<@${user.id}> will be mentioned in voice join notifications.`,
       flags: MessageFlags.Ephemeral,
     });
-
   } else if (commandName === CMD_CLEAR_MENTION_USER) {
     await clearMentionUser(guildId);
     await interaction.reply({
-      content: 'Mention user removed. Notifications will no longer ping anyone.',
+      content:
+        "Mention user removed. Notifications will no longer ping anyone.",
       flags: MessageFlags.Ephemeral,
     });
-
   } else if (commandName === CMD_SET_SCHEDULE) {
-    const minutes = interaction.options.getInteger('minutes');
+    const minutes = interaction.options.getInteger("minutes");
     await setScheduleInterval(guildId, minutes);
 
     if (minutes === 0) {
       stopSchedule(guildId);
       await interaction.reply({
-        content: 'Scheduled messages disabled.',
+        content: "Scheduled messages disabled.",
         flags: MessageFlags.Ephemeral,
       });
     } else {
       const guildConfig = await getConfig(guildId);
       if (!guildConfig?.notifyChannelId) {
         await interaction.reply({
-          content: 'Set a notify channel first with `/set-notify-channel`.',
+          content: "Set a notify channel first with `/set-notify-channel`.",
           flags: MessageFlags.Ephemeral,
         });
         return;
@@ -201,48 +250,47 @@ client.on('interactionCreate', async (interaction) => {
         flags: MessageFlags.Ephemeral,
       });
     }
-
   } else if (commandName === CMD_STOP_SCHEDULE) {
     await setScheduleInterval(guildId, 0);
     stopSchedule(guildId);
     await interaction.reply({
-      content: 'Scheduled messages stopped.',
+      content: "Scheduled messages stopped.",
       flags: MessageFlags.Ephemeral,
     });
-
   } else if (commandName === CMD_DISABLE_VOICE_NOTIFIER) {
     await clearNotifyChannel(guildId);
     await interaction.reply({
-      content: 'Voice join notifications disabled.',
+      content: "Voice join notifications disabled.",
       flags: MessageFlags.Ephemeral,
     });
-
   } else if (commandName === CMD_FAVOR) {
     const sub = interaction.options.getSubcommand();
 
-    if (sub === 'log') {
-      const target = interaction.options.getUser('user');
-      const reason = interaction.options.getString('reason');
-      const direction = interaction.options.getString('direction');
-      const fromId = direction === 'i-owe' ? interaction.user.id : target.id;
-      const toId = direction === 'i-owe' ? target.id : interaction.user.id;
+    if (sub === "log") {
+      const target = interaction.options.getUser("user");
+      const reason = interaction.options.getString("reason");
+      const direction = interaction.options.getString("direction");
+      const fromId = direction === "i-owe" ? interaction.user.id : target.id;
+      const toId = direction === "i-owe" ? target.id : interaction.user.id;
       await logFavor(guildId, fromId, toId, reason);
       await interaction.reply({
         content: `Logged. I don't forget.`,
         flags: MessageFlags.Ephemeral,
       });
-
-    } else if (sub === 'list') {
-      const filterUser = interaction.options.getUser('user');
+    } else if (sub === "list") {
+      const filterUser = interaction.options.getUser("user");
       const userId = filterUser?.id ?? interaction.user.id;
       const favors = await getFavors(guildId, userId);
 
       if (!favors.length) {
-        await interaction.reply({ content: 'The ledger is clear. For now.', flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+          content: "The ledger is clear. For now.",
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
 
-      const lines = favors.map(f => {
+      const lines = favors.map((f) => {
         const date = new Date(f.timestamp).toLocaleDateString();
         if (f.fromUserId === interaction.user.id) {
           return `→ You owe <@${f.toUserId}>: ${f.reason} *(${date})*`;
@@ -250,11 +298,17 @@ client.on('interactionCreate', async (interaction) => {
           return `← <@${f.fromUserId}> owes you: ${f.reason} *(${date})*`;
         }
       });
-      await interaction.reply({ content: lines.join('\n'), flags: MessageFlags.Ephemeral });
-
-    } else if (sub === 'settle') {
-      const target = interaction.options.getUser('user');
-      const settled = await settleFavor(guildId, interaction.user.id, target.id);
+      await interaction.reply({
+        content: lines.join("\n"),
+        flags: MessageFlags.Ephemeral,
+      });
+    } else if (sub === "settle") {
+      const target = interaction.options.getUser("user");
+      const settled = await settleFavor(
+        guildId,
+        interaction.user.id,
+        target.id,
+      );
       if (settled) {
         await interaction.reply({
           content: `Settled: ${settled.reason}. Noted in the ledger.`,
@@ -267,44 +321,47 @@ client.on('interactionCreate', async (interaction) => {
         });
       }
     }
-
   } else if (commandName === CMD_ABSENCE) {
     const sub = interaction.options.getSubcommand();
 
-    if (sub === 'watch') {
-      const user = interaction.options.getUser('user');
-      const days = interaction.options.getInteger('days');
+    if (sub === "watch") {
+      const user = interaction.options.getUser("user");
+      const days = interaction.options.getInteger("days");
       await setAbsenceWatch(guildId, user.id, days);
       await interaction.reply({
         content: `Watching **${user.username}**. I'll say something if they go quiet for ${days} day(s).`,
         flags: MessageFlags.Ephemeral,
       });
-
-    } else if (sub === 'unwatch') {
-      const user = interaction.options.getUser('user');
+    } else if (sub === "unwatch") {
+      const user = interaction.options.getUser("user");
       await removeAbsenceWatch(guildId, user.id);
       await interaction.reply({
         content: `Removed **${user.username}** from the watch list.`,
         flags: MessageFlags.Ephemeral,
       });
-
-    } else if (sub === 'list') {
+    } else if (sub === "list") {
       const watches = await getAbsenceWatches(guildId);
       const config = await getConfig(guildId);
       const lastSeen = config?.lastSeen ?? {};
       const entries = Object.entries(watches);
 
       if (!entries.length) {
-        await interaction.reply({ content: "Nobody on the watch list.", flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+          content: "Nobody on the watch list.",
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
 
       const lines = entries.map(([userId, watch]) => {
         const ts = lastSeen[userId];
-        const seenStr = ts ? new Date(ts).toLocaleDateString() : 'never';
+        const seenStr = ts ? new Date(ts).toLocaleDateString() : "never";
         return `<@${userId}> — alert after ${watch.thresholdDays} day(s), last seen ${seenStr}`;
       });
-      await interaction.reply({ content: lines.join('\n'), flags: MessageFlags.Ephemeral });
+      await interaction.reply({
+        content: lines.join("\n"),
+        flags: MessageFlags.Ephemeral,
+      });
     }
   }
 });
