@@ -3,6 +3,7 @@ import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import {
   Client,
+  EmbedBuilder,
   GatewayIntentBits,
   MessageFlags,
   ActivityType,
@@ -22,6 +23,9 @@ import {
   removeAbsenceWatch,
   getAbsenceWatches,
   updateLastAlerted,
+  addQuest,
+  getQuests,
+  updateQuestStatus,
 } from "./config.js";
 import {
   CMD_SET_NOTIFY_CHANNEL,
@@ -32,6 +36,7 @@ import {
   CMD_DISABLE_VOICE_NOTIFIER,
   CMD_FAVOR,
   CMD_ABSENCE,
+  CMD_QUEST,
 } from "./commands.js";
 import JOIN_MESSAGES from "./join-messages.json" with { type: "json" };
 import { getNextMessage } from "./utils.js";
@@ -39,6 +44,17 @@ import { getNextMessage } from "./utils.js";
 const MESSAGES_PATH = fileURLToPath(
   new URL("./messages.json", import.meta.url),
 );
+
+const QUEST_STATUS_LABEL = {
+  not_started: 'Not Started',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+};
+const QUEST_STATUS_EMOJI = {
+  not_started: '⬜',
+  in_progress: '🔵',
+  completed: '✅',
+};
 
 const ABSENCE_MESSAGES = [
   "<@{user}> hasn't come through in a while. Everything okay?",
@@ -200,9 +216,30 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+  const { guildId } = interaction;
+
+  if (interaction.isAutocomplete()) {
+    if (interaction.commandName === CMD_QUEST) {
+      const sub = interaction.options.getSubcommand();
+      if (sub === "update") {
+        const focused = interaction.options.getFocused();
+        const quests = await getQuests(guildId);
+        const choices = quests
+          .filter((q) => q.name.toLowerCase().includes(focused.toLowerCase()))
+          .slice(0, 25)
+          .map((q) => ({
+            name: `${QUEST_STATUS_EMOJI[q.status]} ${q.name}`,
+            value: q.id,
+          }));
+        await interaction.respond(choices);
+      }
+    }
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
-  const { commandName, guildId } = interaction;
+  const { commandName } = interaction;
 
   if (commandName === CMD_SET_NOTIFY_CHANNEL) {
     const channel = interaction.options.getChannel("channel");
@@ -360,6 +397,77 @@ client.on("interactionCreate", async (interaction) => {
       });
       await interaction.reply({
         content: lines.join("\n"),
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+  } else if (commandName === CMD_QUEST) {
+    const sub = interaction.options.getSubcommand();
+
+    if (sub === "add") {
+      const name = interaction.options.getString("name");
+      const description = interaction.options.getString("description");
+      await addQuest(guildId, { name, description, createdBy: interaction.user.id });
+      await interaction.reply({
+        content: `Quest added: **${name}**`,
+        flags: MessageFlags.Ephemeral,
+      });
+    } else if (sub === "list") {
+      const statusFilter = interaction.options.getString("status") ?? "all";
+      const quests = await getQuests(guildId);
+      const filtered =
+        statusFilter === "all"
+          ? quests
+          : quests.filter((q) => q.status === statusFilter);
+
+      if (!filtered.length) {
+        await interaction.reply({
+          content:
+            statusFilter === "all"
+              ? "No quests yet. Add one with `/quest add`."
+              : `No quests with status **${QUEST_STATUS_LABEL[statusFilter]}**.`,
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      const embed = new EmbedBuilder().setTitle("📜 Quest Board");
+
+      const statusOrder = ["not_started", "in_progress", "completed"];
+      const groups =
+        statusFilter === "all"
+          ? statusOrder
+          : [statusFilter];
+
+      for (const status of groups) {
+        const items = filtered.filter((q) => q.status === status);
+        if (!items.length) continue;
+        const lines = items.map((q) => {
+          const desc =
+            q.description.length > 100
+              ? q.description.slice(0, 97) + "…"
+              : q.description;
+          return `• **${q.name}** — ${desc}`;
+        });
+        embed.addFields({
+          name: `${QUEST_STATUS_EMOJI[status]} ${QUEST_STATUS_LABEL[status]}`,
+          value: lines.join("\n"),
+        });
+      }
+
+      await interaction.reply({ embeds: [embed] });
+    } else if (sub === "update") {
+      const questId = interaction.options.getString("quest");
+      const status = interaction.options.getString("status");
+      const updated = await updateQuestStatus(guildId, questId, status);
+      if (!updated) {
+        await interaction.reply({
+          content: "Quest not found.",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+      await interaction.reply({
+        content: `**${updated.name}** marked as ${QUEST_STATUS_EMOJI[status]} ${QUEST_STATUS_LABEL[status]}.`,
         flags: MessageFlags.Ephemeral,
       });
     }

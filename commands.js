@@ -10,6 +10,7 @@ export const CMD_ABSENCE = 'absence';
 export const CMD_DISABLE_VOICE_NOTIFIER = 'disable-voice-notifier';
 export const CMD_CLEAR_MENTION_USER = 'clear-mention-user';
 export const CMD_STOP_SCHEDULE = 'stop-schedule';
+export const CMD_QUEST = 'quest';
 
 export const SET_NOTIFY_CHANNEL = {
   name: CMD_SET_NOTIFY_CHANNEL,
@@ -180,7 +181,77 @@ export const ABSENCE = {
   ],
 };
 
-const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, CLEAR_MENTION_USER, SET_SCHEDULE, STOP_SCHEDULE, DISABLE_VOICE_NOTIFIER, FAVOR, ABSENCE];
+export const QUEST = {
+  name: CMD_QUEST,
+  description: 'Track quests for the server.',
+  options: [
+    {
+      type: ApplicationCommandOptionType.Subcommand,
+      name: 'add',
+      description: 'Add a new quest.',
+      options: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'name',
+          description: 'Quest name.',
+          required: true,
+        },
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'description',
+          description: 'What the quest involves.',
+          required: true,
+        },
+      ],
+    },
+    {
+      type: ApplicationCommandOptionType.Subcommand,
+      name: 'list',
+      description: 'List quests.',
+      options: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'status',
+          description: 'Filter by status (default: all).',
+          required: false,
+          choices: [
+            { name: 'All', value: 'all' },
+            { name: 'Not Started', value: 'not_started' },
+            { name: 'In Progress', value: 'in_progress' },
+            { name: 'Completed', value: 'completed' },
+          ],
+        },
+      ],
+    },
+    {
+      type: ApplicationCommandOptionType.Subcommand,
+      name: 'update',
+      description: 'Update the status of a quest.',
+      options: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'quest',
+          description: 'The quest to update.',
+          required: true,
+          autocomplete: true,
+        },
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'status',
+          description: 'New status.',
+          required: true,
+          choices: [
+            { name: 'Not Started', value: 'not_started' },
+            { name: 'In Progress', value: 'in_progress' },
+            { name: 'Completed', value: 'completed' },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, CLEAR_MENTION_USER, SET_SCHEDULE, STOP_SCHEDULE, DISABLE_VOICE_NOTIFIER, FAVOR, ABSENCE, QUEST];
 
 async function installCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);

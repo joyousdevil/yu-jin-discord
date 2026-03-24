@@ -131,3 +131,46 @@ export async function updateLastAlerted(guildId, userId) {
   config[guildId].absenceWatches[userId].lastAlerted = Date.now();
   await writeConfig(config);
 }
+
+export async function addQuest(guildId, { name, description, createdBy }) {
+  const config = await readConfig();
+  if (!config[guildId]) config[guildId] = {};
+  if (!config[guildId].quests) config[guildId].quests = [];
+  const quest = {
+    id: randomUUID(),
+    name,
+    description,
+    status: 'not_started',
+    createdBy,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+  config[guildId].quests.push(quest);
+  await writeConfig(config);
+  return quest;
+}
+
+export async function getQuests(guildId) {
+  const config = await readConfig();
+  return config[guildId]?.quests ?? [];
+}
+
+export async function updateQuestStatus(guildId, questId, status) {
+  const config = await readConfig();
+  const quest = config[guildId]?.quests?.find(q => q.id === questId);
+  if (!quest) return null;
+  quest.status = status;
+  quest.updatedAt = Date.now();
+  await writeConfig(config);
+  return quest;
+}
+
+export async function removeQuest(guildId, questId) {
+  const config = await readConfig();
+  if (!config[guildId]?.quests) return false;
+  const idx = config[guildId].quests.findIndex(q => q.id === questId);
+  if (idx === -1) return false;
+  config[guildId].quests.splice(idx, 1);
+  await writeConfig(config);
+  return true;
+}
