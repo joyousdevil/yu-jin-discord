@@ -248,6 +248,20 @@ export const QUEST = {
         },
       ],
     },
+    {
+      type: ApplicationCommandOptionType.Subcommand,
+      name: 'delete',
+      description: 'Delete a quest.',
+      options: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: 'quest',
+          description: 'The quest to delete.',
+          required: true,
+          autocomplete: true,
+        },
+      ],
+    },
   ],
 };
 

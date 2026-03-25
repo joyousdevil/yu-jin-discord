@@ -26,6 +26,7 @@ import {
   addQuest,
   getQuests,
   updateQuestStatus,
+  removeQuest,
 } from "./config.js";
 import {
   CMD_SET_NOTIFY_CHANNEL,
@@ -221,7 +222,7 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isAutocomplete()) {
     if (interaction.commandName === CMD_QUEST) {
       const sub = interaction.options.getSubcommand();
-      if (sub === "update") {
+      if (sub === "update" || sub === "delete") {
         const focused = interaction.options.getFocused();
         const quests = await getQuests(guildId);
         const choices = quests
@@ -468,6 +469,13 @@ client.on("interactionCreate", async (interaction) => {
       }
       await interaction.reply({
         content: `**${updated.name}** marked as ${QUEST_STATUS_EMOJI[status]} ${QUEST_STATUS_LABEL[status]}.`,
+        flags: MessageFlags.Ephemeral,
+      });
+    } else if (sub === "delete") {
+      const questId = interaction.options.getString("quest");
+      const deleted = await removeQuest(guildId, questId);
+      await interaction.reply({
+        content: deleted ? "Quest deleted." : "Quest not found.",
         flags: MessageFlags.Ephemeral,
       });
     }
