@@ -4,11 +4,13 @@ import { fileURLToPath } from "url";
 import {
   Client,
   EmbedBuilder,
+  Events,
   GatewayIntentBits,
   MessageFlags,
   ActivityType,
   PermissionFlagsBits,
 } from "discord.js";
+import { askYuJin } from "./ai.js";
 import {
   getConfig,
   setNotifyChannel,
@@ -39,6 +41,7 @@ import {
   CMD_FAVOR,
   CMD_ABSENCE,
   CMD_QUEST,
+  CMD_ASK,
 } from "./commands.js";
 import JOIN_MESSAGES from "./join-messages.json" with { type: "json" };
 import { getNextMessage } from "./utils.js";
@@ -74,7 +77,12 @@ const ABSENCE_MESSAGES = [
 ];
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
 // guildId -> intervalId
@@ -214,6 +222,32 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       `Failed to send voice notification to guild ${guildId}:`,
       err,
     );
+  }
+});
+
+client.on(Events.MessageCreate, async (message) => {
+  if (message.author.bot) return;
+
+  const isMention = message.mentions.has(client.user);
+  let isReplyToBot = false;
+  if (message.reference?.messageId) {
+    const referenced = await message.channel.messages
+      .fetch(message.reference.messageId)
+      .catch(() => null);
+    isReplyToBot = referenced?.author?.id === client.user.id;
+  }
+
+  if (!isMention && !isReplyToBot) return;
+
+  const userText = message.content.replace(/<@!?\d+>/g, '').trim();
+  if (!userText) return;
+
+  await message.channel.sendTyping();
+  try {
+    const reply = await askYuJin(userText);
+    await message.reply(reply);
+  } catch (err) {
+    console.error('[AI] Error calling Haiku:', err);
   }
 });
 
@@ -491,6 +525,16 @@ client.on("interactionCreate", async (interaction) => {
         content: deleted ? "Quest deleted." : "Quest not found.",
         flags: MessageFlags.Ephemeral,
       });
+    }
+  } else if (commandName === CMD_ASK) {
+    const userText = interaction.options.getString('message');
+    await interaction.deferReply();
+    try {
+      const reply = await askYuJin(userText);
+      await interaction.editReply(reply);
+    } catch (err) {
+      console.error('[AI] Error calling Haiku:', err);
+      await interaction.editReply("Something went wrong. Try again.");
     }
   }
 });

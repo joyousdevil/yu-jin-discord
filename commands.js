@@ -11,6 +11,7 @@ export const CMD_DISABLE_VOICE_NOTIFIER = 'disable-voice-notifier';
 export const CMD_CLEAR_MENTION_USER = 'clear-mention-user';
 export const CMD_STOP_SCHEDULE = 'stop-schedule';
 export const CMD_QUEST = 'quest';
+export const CMD_ASK = 'ask';
 
 export const SET_NOTIFY_CHANNEL = {
   name: CMD_SET_NOTIFY_CHANNEL,
@@ -265,7 +266,20 @@ export const QUEST = {
   ],
 };
 
-const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, CLEAR_MENTION_USER, SET_SCHEDULE, STOP_SCHEDULE, DISABLE_VOICE_NOTIFIER, FAVOR, ABSENCE, QUEST];
+export const ASK = {
+  name: CMD_ASK,
+  description: 'Say something to Yu-Jin.',
+  options: [
+    {
+      type: ApplicationCommandOptionType.String,
+      name: 'message',
+      description: 'What do you want to say?',
+      required: true,
+    },
+  ],
+};
+
+const ALL_COMMANDS = [SET_NOTIFY_CHANNEL, SET_MENTION_USER, CLEAR_MENTION_USER, SET_SCHEDULE, STOP_SCHEDULE, DISABLE_VOICE_NOTIFIER, FAVOR, ABSENCE, QUEST, ASK];
 
 async function installCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
