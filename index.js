@@ -7,6 +7,7 @@ import {
   GatewayIntentBits,
   MessageFlags,
   ActivityType,
+  PermissionFlagsBits,
 } from "discord.js";
 import {
   getConfig,
@@ -459,6 +460,12 @@ client.on("interactionCreate", async (interaction) => {
     } else if (sub === "update") {
       const questId = interaction.options.getString("quest");
       const status = interaction.options.getString("status");
+      const quests = await getQuests(guildId);
+      const quest = quests.find((q) => q.id === questId);
+      if (quest && quest.createdBy !== interaction.user.id && !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "Only the quest creator or an admin can update this quest.", flags: MessageFlags.Ephemeral });
+        return;
+      }
       const updated = await updateQuestStatus(guildId, questId, status);
       if (!updated) {
         await interaction.reply({
@@ -473,6 +480,12 @@ client.on("interactionCreate", async (interaction) => {
       });
     } else if (sub === "delete") {
       const questId = interaction.options.getString("quest");
+      const quests = await getQuests(guildId);
+      const quest = quests.find((q) => q.id === questId);
+      if (quest && quest.createdBy !== interaction.user.id && !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "Only the quest creator or an admin can delete this quest.", flags: MessageFlags.Ephemeral });
+        return;
+      }
       const deleted = await removeQuest(guildId, questId);
       await interaction.reply({
         content: deleted ? "Quest deleted." : "Quest not found.",

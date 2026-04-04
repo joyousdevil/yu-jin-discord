@@ -91,7 +91,7 @@ export const FAVOR = {
     {
       type: ApplicationCommandOptionType.Subcommand,
       name: 'list',
-      description: 'List unsettled favors.',
+      description: 'List unsettled favors. Visible to all server members.',
       options: [
         {
           type: ApplicationCommandOptionType.User,
