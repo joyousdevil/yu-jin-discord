@@ -164,7 +164,7 @@ async function checkAbsences() {
 
 client.once("clientReady", async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  client.user.setActivity("Spotify", {
+  client.user.setActivity("Listening to Spotify", {
     type: ActivityType.Listening,
     start: Date.now(),
   });
