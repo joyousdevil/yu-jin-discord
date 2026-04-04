@@ -51,14 +51,14 @@ const MESSAGES_PATH = fileURLToPath(
 );
 
 const QUEST_STATUS_LABEL = {
-  not_started: 'Not Started',
-  in_progress: 'In Progress',
-  completed: 'Completed',
+  not_started: "Not Started",
+  in_progress: "In Progress",
+  completed: "Completed",
 };
 const QUEST_STATUS_EMOJI = {
-  not_started: '⬜',
-  in_progress: '🔵',
-  completed: '✅',
+  not_started: "⬜",
+  in_progress: "🔵",
+  completed: "✅",
 };
 
 const ABSENCE_MESSAGES = [
@@ -164,8 +164,8 @@ async function checkAbsences() {
 
 client.once("clientReady", async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  client.user.setActivity("Project Zomboid", {
-    type: ActivityType.Playing,
+  client.user.setActivity("Spotify", {
+    type: ActivityType.Listening,
     start: Date.now(),
   });
   for (const guild of client.guilds.cache.values()) {
@@ -239,7 +239,7 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (!isMention && !isReplyToBot) return;
 
-  const userText = message.content.replace(/<@!?\d+>/g, '').trim();
+  const userText = message.content.replace(/<@!?\d+>/g, "").trim();
   if (!userText) return;
 
   await message.channel.sendTyping();
@@ -247,7 +247,7 @@ client.on(Events.MessageCreate, async (message) => {
     const reply = await askYuJin(userText);
     await message.reply(reply);
   } catch (err) {
-    console.error('[AI] Error calling Haiku:', err);
+    console.error("[AI] Error calling Haiku:", err);
   }
 });
 
@@ -442,7 +442,11 @@ client.on("interactionCreate", async (interaction) => {
     if (sub === "add") {
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
-      await addQuest(guildId, { name, description, createdBy: interaction.user.id });
+      await addQuest(guildId, {
+        name,
+        description,
+        createdBy: interaction.user.id,
+      });
       await interaction.reply({
         content: `Quest added: **${name}**`,
         flags: MessageFlags.Ephemeral,
@@ -469,10 +473,7 @@ client.on("interactionCreate", async (interaction) => {
       const embed = new EmbedBuilder().setTitle("📜 Quest Board");
 
       const statusOrder = ["not_started", "in_progress", "completed"];
-      const groups =
-        statusFilter === "all"
-          ? statusOrder
-          : [statusFilter];
+      const groups = statusFilter === "all" ? statusOrder : [statusFilter];
 
       for (const status of groups) {
         const items = filtered.filter((q) => q.status === status);
@@ -496,8 +497,15 @@ client.on("interactionCreate", async (interaction) => {
       const status = interaction.options.getString("status");
       const quests = await getQuests(guildId);
       const quest = quests.find((q) => q.id === questId);
-      if (quest && quest.createdBy !== interaction.user.id && !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
-        await interaction.reply({ content: "Only the quest creator or an admin can update this quest.", flags: MessageFlags.Ephemeral });
+      if (
+        quest &&
+        quest.createdBy !== interaction.user.id &&
+        !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)
+      ) {
+        await interaction.reply({
+          content: "Only the quest creator or an admin can update this quest.",
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
       const updated = await updateQuestStatus(guildId, questId, status);
@@ -516,8 +524,15 @@ client.on("interactionCreate", async (interaction) => {
       const questId = interaction.options.getString("quest");
       const quests = await getQuests(guildId);
       const quest = quests.find((q) => q.id === questId);
-      if (quest && quest.createdBy !== interaction.user.id && !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
-        await interaction.reply({ content: "Only the quest creator or an admin can delete this quest.", flags: MessageFlags.Ephemeral });
+      if (
+        quest &&
+        quest.createdBy !== interaction.user.id &&
+        !interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)
+      ) {
+        await interaction.reply({
+          content: "Only the quest creator or an admin can delete this quest.",
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
       const deleted = await removeQuest(guildId, questId);
@@ -527,13 +542,13 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
   } else if (commandName === CMD_ASK) {
-    const userText = interaction.options.getString('message');
+    const userText = interaction.options.getString("message");
     await interaction.deferReply();
     try {
       const reply = await askYuJin(userText);
       await interaction.editReply(reply);
     } catch (err) {
-      console.error('[AI] Error calling Haiku:', err);
+      console.error("[AI] Error calling Haiku:", err);
       await interaction.editReply("Something went wrong. Try again.");
     }
   }
