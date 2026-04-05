@@ -85,12 +85,26 @@ const client = new Client({
   ],
 });
 
+const CONVERSATION_HISTORY_LIMIT = 20; // max messages stored per user (10 exchanges)
+
 // guildId -> intervalId
 const scheduleTimers = new Map();
 // Per-type shuffle queues: guildId -> remaining messages
 const messageQueues = new Map();
 const joinMessageQueues = new Map();
 const absenceMessageQueues = new Map();
+// userId -> [{role, content}, ...] conversation history
+const conversationHistories = new Map();
+
+function appendToHistory(userId, userText, assistantText) {
+  const history = conversationHistories.get(userId) ?? [];
+  history.push({ role: "user", content: userText });
+  history.push({ role: "assistant", content: assistantText });
+  if (history.length > CONVERSATION_HISTORY_LIMIT) {
+    history.splice(0, history.length - CONVERSATION_HISTORY_LIMIT);
+  }
+  conversationHistories.set(userId, history);
+}
 
 async function getMessages() {
   const raw = await readFile(MESSAGES_PATH, "utf-8");
@@ -249,8 +263,10 @@ client.on(Events.MessageCreate, async (message) => {
 
   await message.channel.sendTyping();
   try {
-    const reply = await askYuJin(userText);
+    const history = conversationHistories.get(message.author.id) ?? [];
+    const reply = await askYuJin(userText, history);
     await message.reply(reply);
+    appendToHistory(message.author.id, userText, reply);
   } catch (err) {
     console.error("[AI] Error calling Haiku:", err);
   }
@@ -550,8 +566,10 @@ client.on("interactionCreate", async (interaction) => {
     const userText = interaction.options.getString("message");
     await interaction.deferReply();
     try {
-      const reply = await askYuJin(userText);
+      const history = conversationHistories.get(interaction.user.id) ?? [];
+      const reply = await askYuJin(userText, history);
       await interaction.editReply(reply);
+      appendToHistory(interaction.user.id, userText, reply);
     } catch (err) {
       console.error("[AI] Error calling Haiku:", err);
       await interaction.editReply("Something went wrong. Try again.");
