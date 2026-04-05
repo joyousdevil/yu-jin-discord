@@ -30,3 +30,23 @@ export async function askYuJin(userMessage) {
   });
   return response.content[0].text;
 }
+
+export async function generateJoinMessage() {
+  const response = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 80,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: 'A crew member just jumped into voice. Give them a brief reaction.' }],
+  });
+  return response.content[0].text;
+}
+
+export async function generateScheduledMessage() {
+  const response = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 150,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: 'Say something to the crew. Unprompted, unfiltered.' }],
+  });
+  return response.content[0].text;
+}

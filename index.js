@@ -10,7 +10,7 @@ import {
   ActivityType,
   PermissionFlagsBits,
 } from "discord.js";
-import { askYuJin } from "./ai.js";
+import { askYuJin, generateJoinMessage, generateScheduledMessage } from "./ai.js";
 import {
   getConfig,
   setNotifyChannel,
@@ -112,7 +112,12 @@ function startSchedule(guild, notifyChannelId, intervalMinutes) {
     if (!channel) return;
     const messages = await getMessages();
     if (!messages.length) return;
-    const msg = getNextMessage(messageQueues, guild.id, messages);
+    let msg;
+    try {
+      msg = await generateScheduledMessage();
+    } catch {
+      msg = getNextMessage(messageQueues, guild.id, messages);
+    }
     try {
       await channel.send(msg);
     } catch (err) {
@@ -210,10 +215,15 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     ? ` — <@${guildConfig.mentionUserId}>`
     : "";
 
-  const template = getNextMessage(joinMessageQueues, guildId, JOIN_MESSAGES);
-  const msg = template
-    .replace("{user}", username)
-    .replace("{channel}", voiceChannelName);
+  let msg;
+  try {
+    msg = await generateJoinMessage();
+  } catch {
+    const template = getNextMessage(joinMessageQueues, guildId, JOIN_MESSAGES);
+    msg = template
+      .replace("{user}", username)
+      .replace("{channel}", voiceChannelName);
+  }
 
   try {
     await notifyChannel.send(msg + mention);
