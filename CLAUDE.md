@@ -34,7 +34,7 @@ The bot is hosted on **Railway**, connected to this GitHub repo. Railway runs `n
 Copy `.env.sample` to `.env` and populate:
 - `DISCORD_TOKEN` — Bot token
 - `APP_ID` — Discord application ID
-- `PUBLIC_KEY` — App public key
+- `ANTHROPIC_API_KEY` — Anthropic API key for Yu-Jin's AI responses
 - `GUILD_ID` — *(Optional)* Guild ID for instant command registration during development
 - `DATA_DIR` — *(Optional)* Directory for `guild-config.json`. Set to `/data` on Railway (with a Volume mounted there) to persist config across redeploys. Falls back to project root if unset.
 
@@ -44,9 +44,10 @@ Yu-Jin is a Node.js (ESM, `"type": "module"`) Discord bot using **discord.js v14
 
 **Responsibilities handled by the Gateway client:**
 1. `voiceStateUpdate` event — detects voice joins, records `lastSeen`, and posts a randomized notification to the configured channel
-2. `interactionCreate` event — handles all slash commands
-3. Scheduled interval timers — per-guild timers that post random messages from `messages.json` to the notify channel
-4. Daily absence check — runs on startup and every 24h; alerts for watched users who haven't joined voice within their threshold
+2. `messageCreate` event — handles @mentions and replies-to-bot; passes message to `askYuJin()` with per-user conversation history
+3. `interactionCreate` event — handles all slash commands (including `/ask` which also calls `askYuJin()`)
+4. Scheduled interval timers — per-guild timers that post AI-generated messages (falling back to `messages.json`) to the notify channel
+5. Daily absence check — runs on startup and every 24h; alerts for watched users who haven't joined voice within their threshold
 
 **Detecting a join:**
 ```
@@ -55,7 +56,8 @@ oldState.channelId === null && newState.channelId !== null  →  user joined
 Bots are filtered out via `newState.member.user.bot`.
 
 **Module responsibilities:**
-- `index.js` — Entry point: creates `Client` with `Guilds` + `GuildVoiceStates` intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId) and three shuffle-queue maps (`messageQueues`, `joinMessageQueues`, `absenceMessageQueues`) in memory; contains `checkAbsences()` logic
+- `index.js` — Entry point: creates `Client` with all required intents, attaches all event handlers, manages `scheduleTimers` (guildId → intervalId), three shuffle-queue maps (`messageQueues`, `joinMessageQueues`, `absenceMessageQueues`), and `conversationHistories` (userId → message array) in memory; contains `checkAbsences()` logic
+- `ai.js` — Anthropic SDK wrapper: exports `askYuJin(userMessage, history)` and `generateScheduledMessage()`; holds the Yu-Jin system prompt; uses `claude-haiku-4-5-20251001`
 - `commands.js` — Exports command name constants and command definition objects; registers commands via Discord REST API when run directly (`npm run register`)
 - `config.js` — All config read/write functions; reads and writes `guild-config.json` with an in-memory cache (disk read only on first access)
 - `utils.js` — Pure utility functions: `getNextMessage(map, guildId, messages)` manages per-guild shuffle queues
@@ -74,6 +76,9 @@ Bots are filtered out via `newState.member.user.bot`.
     "absenceWatches": {
       "userId": { "thresholdDays": 7, "lastAlerted": null }
     },
+    "quests": [
+      { "id": "uuid", "name": "...", "description": "...", "status": "not_started", "createdBy": "...", "createdAt": 0 }
+    ],
     "lastSeen": {
       "userId": 1234567890
     }
@@ -83,11 +88,13 @@ Bots are filtered out via `newState.member.user.bot`.
 
 **Join messages:** `join-messages.json` is a JSON array of strings with `{user}` and `{channel}` placeholders. Drawn from a per-guild shuffle queue; refills when exhausted (no repeats until all messages have been sent).
 
-**Scheduled messages:** `messages.json` is a JSON array of strings. Drawn from a per-guild shuffle queue; refills when exhausted.
+**Scheduled messages:** AI-generated via `generateScheduledMessage()` first; falls back to `messages.json` shuffle queue on error.
 
 **Absence alerts:** `ABSENCE_MESSAGES` array inline in `index.js`. Drawn from a per-guild shuffle queue; refills when exhausted. Uses `<@userId>` ping format.
 
-**Required Gateway intents:** `Guilds`, `GuildVoiceStates` (neither is privileged).
+**Conversation history:** `conversationHistories` map (userId → `[{role, content}]`). Capped at 20 entries (10 exchanges) via splice. In-memory only — resets on restart. Used by both `messageCreate` (@mention/reply) and `/ask`.
+
+**Required Gateway intents:** `Guilds`, `GuildVoiceStates` (non-privileged); `GuildMessages` (non-privileged); `MessageContent` (**privileged** — must be enabled in the Discord Developer Portal).
 
 **Node version note:** Uses `import ... with { type: 'json' }` syntax (Node v22+). The `assert` keyword is not used.
 

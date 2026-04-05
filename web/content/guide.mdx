@@ -111,8 +111,56 @@ Shows all watched users, their alert thresholds, and when they were last seen in
 
 ---
 
+## Quest Board `/quest`
+
+Track quests for the server. Quests are visible to everyone.
+
+### Add a quest
+```
+/quest add name:Find the missing shipment description:Gram says it went east of the checkpoint
+```
+
+### List quests
+```
+/quest list
+/quest list status:in_progress
+```
+
+Statuses: `Not Started`, `In Progress`, `Completed`. The board is public (not ephemeral).
+
+### Update a quest
+```
+/quest update quest:[autocomplete] status:in_progress
+```
+
+Only the quest creator or someone with **Manage Guild** permission can update.
+
+### Delete a quest
+```
+/quest delete quest:[autocomplete]
+```
+
+Only the quest creator or someone with **Manage Guild** permission can delete.
+
+---
+
+## Talking to Yu-Jin
+
+You can talk to Yu-Jin directly. She remembers up to 10 exchanges per user (in-memory — resets when the bot restarts).
+
+### Via slash command
+```
+/ask message:What's the situation in Japantown?
+```
+
+### Via @mention or reply
+Mention the bot in any message, or reply to one of her messages. She'll respond in-channel.
+
+---
+
 ## Notes
 
-- All command replies are ephemeral (only visible to you).
-- Favor data and absence watches are stored per-server and persist across bot restarts.
+- Most command replies are ephemeral (only visible to you). `/quest list` is the exception — it posts to the channel.
+- Favor, absence, and quest data are stored per-server and persist across bot restarts.
 - Yu-Jin will not alert for the same absence more than once per threshold period.
+- Conversation memory is in-memory only and resets when the bot restarts.

@@ -7,7 +7,13 @@
 
 ### Discord
 - **discord.js v14** — Gateway API client (persistent WebSocket). No HTTP interaction endpoint — all events and slash commands are handled through the Gateway.
-- **Intents used:** `Guilds`, `GuildVoiceStates` (neither is privileged)
+- **Intents used:** `Guilds`, `GuildVoiceStates` (non-privileged); `GuildMessages`, `MessageContent` (non-privileged and privileged respectively — required for @mention and reply-to-bot AI conversation)
+
+### AI
+- **@anthropic-ai/sdk** — Anthropic client used in `ai.js` to drive Yu-Jin's responses.
+- **Model:** `claude-haiku-4-5-20251001` — used for both `/ask` slash command responses and scheduled message generation.
+- **Conversation memory:** per-user message history kept in-memory (up to 20 messages / 10 exchanges); resets on bot restart.
+- **Scheduled messages:** AI-generated when the API is available; falls back to the `messages.json` shuffle queue on error.
 
 ### Configuration
 - **dotenv** — Loads environment variables from `.env` into `process.env` at startup.
@@ -60,11 +66,12 @@
 
 | File / Directory | Purpose |
 |---|---|
-| `index.js` | Bot entry point — Discord client, event handlers, timers, absence checks |
+| `index.js` | Bot entry point — Discord client, event handlers, timers, absence checks, AI conversation |
+| `ai.js` | Anthropic SDK wrapper — `askYuJin()` and `generateScheduledMessage()` |
 | `config.js` | Config read/write with in-memory cache; all guild state lives here |
 | `commands.js` | Slash command definitions; also registers commands when run directly |
 | `utils.js` | Pure utility functions (`getNextMessage` shuffle queue logic) |
-| `messages.json` | Scheduled message strings (`{user}` placeholder) |
+| `messages.json` | Scheduled message strings (fallback when AI is unavailable) |
 | `join-messages.json` | Voice join notification strings (`{user}`, `{channel}` placeholders) |
 | `guild-config.json` | Runtime config (gitignored; created on first run) |
 | `test/` | Unit tests using `node:test` |
