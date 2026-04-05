@@ -217,7 +217,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
   let msg;
   try {
-    msg = await generateJoinMessage();
+    msg = await generateJoinMessage(username, voiceChannelName);
   } catch {
     const template = getNextMessage(joinMessageQueues, guildId, JOIN_MESSAGES);
     msg = template
