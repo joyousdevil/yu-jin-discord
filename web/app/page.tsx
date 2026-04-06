@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Radio, ScrollText, Eye, type LucideIcon } from 'lucide-react';
+import { Radio, ScrollText, Eye, Map, MessageCircle, type LucideIcon } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -52,11 +52,23 @@ export default function Home() {
           description="Yu-Jin checks daily whether any watched users have been absent from voice longer than their configured threshold. She'll ping them when they've been quiet too long."
           delay="450ms"
         />
+        <Feature
+          icon={Map}
+          title="Quest Board"
+          description="Track ongoing objectives for your server. Members can add quests, update their status — Not Started, In Progress, or Completed — and clean up when the job's done."
+          delay="550ms"
+        />
+        <Feature
+          icon={MessageCircle}
+          title="Talk to Yu-Jin"
+          description="Mention her, reply to her, or use /ask to talk directly. She remembers up to 10 exchanges per user and responds in character. Conversation memory resets when the bot restarts."
+          delay="650ms"
+        />
       </div>
 
       {/* Links */}
       <div
-        className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted animate-fade-in [animation-delay:550ms]"
+        className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted animate-fade-in [animation-delay:750ms]"
       >
         <Link href="/guide" className="hover:text-accent transition-colors">User Guide</Link>
         <Link href="/tos" className="hover:text-accent transition-colors">Terms of Service</Link>
