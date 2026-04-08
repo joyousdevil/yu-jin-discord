@@ -9,6 +9,7 @@ import {
   MessageFlags,
   ActivityType,
   PermissionFlagsBits,
+  Partials,
 } from "discord.js";
 import { askYuJin, generateScheduledMessage } from "./ai.js";
 import {
@@ -84,6 +85,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
   ],
+  partials: [Partials.Channel, Partials.Message],
 });
 
 const CONVERSATION_HISTORY_LIMIT = 20; // max messages stored per user (10 exchanges)
