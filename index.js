@@ -82,6 +82,7 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages,
   ],
 });
 
@@ -246,6 +247,23 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
+
+  // DM handling — respond to every message
+  if (!message.guild) {
+    const userId = message.author.id;
+    const history = conversationHistories.get(userId) ?? [];
+    const userText = message.content.trim();
+    if (!userText) return;
+    await message.channel.sendTyping();
+    try {
+      const reply = await askYuJin(userText, history);
+      appendToHistory(userId, userText, reply);
+      await message.reply(reply);
+    } catch (err) {
+      console.error("[AI] DM error:", err);
+    }
+    return;
+  }
 
   const isMention = message.mentions.has(client.user);
   let isReplyToBot = false;
